@@ -1,5 +1,5 @@
-(function() {
 'use strict';
+define(['jquery'], function ($) {
 
 /* 
  * Implementation of a small platform for standalone tasks, mostly for
@@ -19,6 +19,8 @@ function inIframe () {
       return false;
    }
 }
+
+return function (platform, task, grader) {
 
 var taskMetaData;
 
@@ -99,7 +101,6 @@ function getUrlParameter(sParam)
     }
 }
 
-$(document).ready(function() {
    var hasPlatform = false;
    try {
        hasPlatform = (inIframe() && (typeof parent.TaskProxyManager !== 'undefined') && (typeof parent.generating == 'undefined' || parent.generating === true));
@@ -192,6 +193,5 @@ $(document).ready(function() {
       }
       setTimeout(getMetaDataAndLoad, 0);
    }
-});
 
-})();
+}; });
