@@ -1,0 +1,7 @@
+{
+  "name": "bebras-mini-platform",
+  "version": "1.0",
+  "license": "MIT",
+  "ignore": ["**/.*"],
+  "main": "miniPlatform.js"
+}
