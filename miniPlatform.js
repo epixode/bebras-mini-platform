@@ -20,31 +20,32 @@ function inIframe () {
    }
 }
 
-return function (platform, task, grader) {
+return function (context) {
 
 var taskMetaData;
+context.task.getMetaData(function (value) { taskMetaData = value; });
 
 // important for tracker.js
 var compiledTask = true;
 
-var miniPlatformShowSolution = function() {
+context.miniPlatformShowSolution = function() {
    $("#toremove").hide();
    task.getAnswer(function(answer) {
       task.showViews({"task": true, "solution": true}, function() {
          miniPlatformPreviewGrade(answer);
-         platform.trigger('showViews', [{"task": true, "solution": true}]);
+         context.platform.trigger('showViews', [{"task": true, "solution": true}]);
       });
    });
 };
 
-var miniPlatformPreviewGrade = function(answer) {
+context.miniPlatformPreviewGrade = function(answer) {
    var minScore = -3;
    if (taskMetaData.fullFeedback) {
       minScore = 0;
    }
    var maxScore = 6;
    var score;
-   var showGrade = function(score) {
+   function showGrade (score) {
       if ($("#previewScorePopup").length === 0) {
          $("<div id='previewScorePopup'><div style=\"background-color:#111;opacity: 0.65;filter:alpha(opacity=65);position:absolute;z-index:10;top:0px;left:0px;width:100%;height:2000px\"></div>" +
             "<div style='position:fixed;top:100px;left:100px;width:400px;height:200px;background-color:#E0E0FF;color:black;border: solid black 3px;text-align:center;z-index:1000'>" +
@@ -63,16 +64,16 @@ var miniPlatformPreviewGrade = function(answer) {
       }
       showGrade(score);
    } else {
-      score = grader.gradeTask(answer, null, showGrade);
+      score = context.grader.gradeTask(answer, null, showGrade);
    }
 };
 
 var alreadyStayed = false;
 
-var miniPlatformValidate = function(mode) {
+context.miniPlatformValidate = function(mode) {
    if (mode == 'stay') {
       if (alreadyStayed) {
-         platform.trigger('validate', [mode]);
+         context.platform.trigger('validate', [mode]);
          return true;
       } else {
          alreadyStayed = true;
@@ -84,7 +85,7 @@ var miniPlatformValidate = function(mode) {
    } else {
       $("#task").append("<center id='toremove'><br/><input type='button' value='Voir la solution' onclick='miniPlatformShowSolution()'></input></center>");
    }
-   platform.trigger('validate', [mode]);
+   context.platform.trigger('validate', [mode]);
 };
 
 function getUrlParameter(sParam)
@@ -111,9 +112,9 @@ function getUrlParameter(sParam)
        }
    }
    if (!hasPlatform) {
-      var platformLoad = function() {
-         platform.validate = miniPlatformValidate;
-         platform.updateHeight = function(height) {};
+      function platformLoad () {
+         context.platform.validate = miniPlatformValidate;
+         context.platform.updateHeight = function(height) {};
          var taskOptions = {};
          try {
             var strOptions = getUrlParameter("options");
@@ -127,7 +128,7 @@ function getUrlParameter(sParam)
          if (taskMetaData.fullFeedback) {
             minScore = 0;
          }
-         platform.getTaskParams = function(key, defaultValue) {
+         context.platform.getTaskParams = function(key, defaultValue) {
             var res = {'minScore': minScore, 'maxScore': 6, 'noScore': 0, 'readOnly': false, 'randomSeed': 0, 'options': taskOptions};
             if (typeof key !== 'undefined') {
                if (key !== 'options' && key in res) {
@@ -140,7 +141,7 @@ function getUrlParameter(sParam)
             }
             return res;
          };
-         platform.getTaskOption = function(optionName, defaultValue) {
+         context.platform.getTaskOption = function(optionName, defaultValue) {
             if ((taskOptions === null) || (taskOptions[optionName] === undefined)) {
                return defaultValue;
             }
@@ -160,17 +161,17 @@ function getUrlParameter(sParam)
          if (taskMetaData.fullFeedback) {
             loadedViews.grader = true;
          }
-         var showViewsHandlerFactory = function (view) {
+         function showViewsHandlerFactory (view) {
             return function() {
                var tmp = {};
                tmp[view] = true;
-               task.showViews(tmp, function(){});
+               context.task.showViews(tmp, function(){});
             }
          }
-         task.load(loadedViews, function() {
-            platform.trigger('load', [loadedViews]);
-            if (task.printViewChooser) {
-               task.getViews(function(views){
+         context.task.load(loadedViews, function() {
+            context.platform.trigger('load', [loadedViews]);
+            if (context.task.printViewChooser) {
+               context.task.getViews(function(views){
                   if ($("#choose-view").length == 0)
                      $(document.body).prepend('<div id="choose-view"></div>');
                   $("#choose-view").html("");
@@ -180,13 +181,13 @@ function getUrlParameter(sParam)
                   }
                });
             }
-            task.showViews(shownViews, function() {
-               platform.trigger('showViews', [{"task": true}]);
+            context.task.showViews(shownViews, function() {
+               context.platform.trigger('showViews', [{"task": true}]);
             });
          });
       };
       function getMetaDataAndLoad() {
-         task.getMetaData(function(metaData) {
+         context.task.getMetaData(function(metaData) {
             taskMetaData = metaData;
             platformLoad();
          });
